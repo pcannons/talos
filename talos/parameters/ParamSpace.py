@@ -1,5 +1,4 @@
-import inspect
-
+import inspect, sys
 import numpy as np
 import itertools as it
 from datetime import datetime
@@ -35,8 +34,13 @@ class ParamSpace:
         self._params_temp = [list(self.p[key]) for key in self.param_keys]
 
         # establish max dimensions
-        self.dimensions = np.prod([len(l) for l in self._params_temp])
+        self.dimensions = np.prod([len(l) for l in self._params_temp], dtype=float)
 
+        if self.dimensions > sys.maxsize:
+            self.dimensions = sys.maxsize
+        else:
+            self.dimensions = int(self.dimensions)
+            
         # apply all the set limits
         self.param_index = self._param_apply_limits()
 
@@ -141,7 +145,7 @@ class ParamSpace:
             for i in self.param_index:
                 p = []
                 for l in reversed(self._params_temp):
-                    i, s = divmod(int(i), len(l))
+                    _, s = divmod(int(i), len(l))
                     p.insert(0, l[s])
                 final_grid.append(tuple(p))
 
